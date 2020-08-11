@@ -1,8 +1,8 @@
 package models
 
 type FisicalInformation struct {
-	Mass        string
-	Diameter    float64
-	Temperature float64
-	SunDistance float64
+	Mass        string  `json:"mass"`
+	Diameter    float64 `json:"diameter"`
+	Temperature float64 `json:"temperature"`
+	SunDistance float64 `json:"sunDistance"`
 }
