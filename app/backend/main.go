@@ -4,14 +4,15 @@ import (
 	"log"
 	"net/http"
 
+	"./controllers"
 	"github.com/gorilla/mux"
 )
 
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/api/v1/astros", nil).Methods("GET")
-	r.HandleFunc("/api/v1/astros/{id}", nil).Methods("GET")
+	r.HandleFunc("/api/v1/astros", controllers.GetAstros).Methods("GET")
+	r.HandleFunc("/api/v1/astros/{id}", controllers.GetAstro).Methods("GET")
 	r.HandleFunc("/api/v1/astros", nil).Methods("POST")
 	r.HandleFunc("/api/v1/astros/{id}", nil).Methods("PUT")
 	r.HandleFunc("/api/v1/astros/{id}", nil).Methods("DELETE")
