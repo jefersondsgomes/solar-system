@@ -8,7 +8,7 @@ import (
 )
 
 func GetAll() []models.Astro {
-	var id, moons, informationId, astroFk int
+	var id, moons int
 	var imagePath, name, description, category, mass string
 	var diameter, temperature, sunDistance float64
 
@@ -27,12 +27,15 @@ func GetAll() []models.Astro {
 			return nil
 		}
 
-		err2 := db.QueryRow("SELECT * FROM [dbo].[FisicalInformation] WHERE AstroId = @AstroId", sql.Named("AstroId", id)).Scan(&informationId, &astroFk, &mass, &diameter, &temperature, &sunDistance)
+		err2 := db.QueryRow(
+			"SELECT Mass, Diameter, Temperature, SunDistance FROM [dbo].[FisicalInformation] WHERE AstroId = @AstroId",
+			sql.Named("AstroId", id)).Scan(&mass, &diameter, &temperature, &sunDistance)
+
 		if err2 == sql.ErrNoRows {
 			astros = append(astros, models.Astro{id, imagePath, name, moons, description, category, models.FisicalInformation{}})
 		} else {
-			information := models.FisicalInformation{mass, diameter, temperature, sunDistance}
-			astros = append(astros, models.Astro{id, imagePath, name, moons, description, category, information})
+			astros = append(astros, models.Astro{id, imagePath, name, moons, description, category,
+				models.FisicalInformation{mass, diameter, temperature, sunDistance}})
 		}
 	}
 
@@ -41,31 +44,33 @@ func GetAll() []models.Astro {
 
 func Get(id int) models.Astro {
 	var astro models.Astro
-	var information models.FisicalInformation
-	var moons, informationId, astroFk int
+	var moons int
 	var imagePath, name, description, category, mass string
 	var diameter, temperature, sunDistance float64
 
 	db := providers.SqlConnection()
 	defer db.Close()
 
-	err := db.QueryRow("SELECT TOP 1 * FROM [dbo].[Astro] WHERE Id = @id", sql.Named("id", id)).Scan(&id, &imagePath, &name, &moons, &description, &category)
+	err := db.QueryRow(
+		"SELECT a.ImagePath, a.Name, a.Moons, a.Description, a.Category, f.Mass, f.Diameter, F.Temperature, F.SunDistance FROM [dbo].[Astro] a LEFT JOIN [dbo].[FisicalInformation] f ON a.Id = f.AstroId WHERE a.Id = @id",
+		sql.Named("id", id)).Scan(&imagePath, &name, &moons, &description, &category, &mass, &diameter, &temperature, &sunDistance)
+
 	if err != nil && err == sql.ErrNoRows {
 		return astro
 	}
 
-	err2 := db.QueryRow("SELECT TOP 1 * FROM [dbo].[FisicalInformation] WHERE AstroId = @id", sql.Named("id", id)).Scan(&informationId, &astroFk, &mass, &diameter, &temperature, &sunDistance)
-	if err2 != sql.ErrNoRows {
-		information = models.FisicalInformation{mass, diameter, temperature, sunDistance}
-	}
+	astro = models.Astro{id, imagePath, name, moons, description, category,
+		models.FisicalInformation{mass, diameter, temperature, sunDistance}}
 
-	astro = models.Astro{id, imagePath, name, moons, description, category, information}
 	return astro
 }
 
-func Create(astro models.Astro) {
+func Create(astro models.Astro) *models.Astro {
 	db := providers.SqlConnection()
 	defer db.Close()
+	return nil
+
+	//insert, err := db.Prepare("INSERT INTO [dbo].[Astro] ()")
 
 }
 

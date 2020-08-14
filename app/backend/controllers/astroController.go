@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"../models"
 	"../repositories"
 
 	"github.com/gorilla/mux"
@@ -34,8 +35,8 @@ func GetAstro(w http.ResponseWriter, r *http.Request) {
 
 	astro := repositories.Get(id)
 
-	if astro.Id != id || astro.Id < 1 {
-		w.WriteHeader(404)
+	if astro.Id < 1 {
+		w.WriteHeader(204)
 		return
 	}
 
@@ -44,7 +45,12 @@ func GetAstro(w http.ResponseWriter, r *http.Request) {
 
 func CreateAstro(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	var astro models.Astro
+	_ = json.NewDecoder(r.Body).Decode(&astro)
+	result := repositories.Create(astro)
 
+	w.WriteHeader(204)
+	json.NewEncoder(w).Encode(result)
 }
 
 func UpdateAstro(w http.ResponseWriter, r *http.Request) {
