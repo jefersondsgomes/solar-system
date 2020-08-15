@@ -2,10 +2,9 @@ package models
 
 type Astro struct {
 	Id          int                `json:"id"`
-	ImagePath   string             `json:"imagePath"`
+	Image       string             `json:"image"`
 	Name        string             `json:"name"`
-	Moons       int                `json:"moons"`
-	Description string             `json:"description"`
 	Category    string             `json:"category"`
+	Description string             `json:"description"`
 	Information FisicalInformation `json:"information"`
 }

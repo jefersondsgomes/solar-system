@@ -13,12 +13,11 @@ func Create(astro models.Astro) {
 	defer db.Close()
 
 	var lastInsertId int
-	if err := db.QueryRow("INSERT INTO [dbo].[Astro] (ImagePath, Name, Moons, Description, Category) OUTPUT Inserted.ID VALUES (@ImagePath, @Name, @Moons, @Description, @Category)",
-		sql.Named("ImagePath", astro.ImagePath),
+	if err := db.QueryRow("INSERT INTO [dbo].[Astro] (Image, Name, Category, Description) OUTPUT Inserted.ID VALUES (@Image, @Name, @Category, @Description)",
+		sql.Named("Image", astro.Image),
 		sql.Named("Name", astro.Name),
-		sql.Named("Moons", astro.Moons),
-		sql.Named("Description", astro.Description),
-		sql.Named("Category", astro.Category)).Scan(&lastInsertId); err != nil {
+		sql.Named("Category", astro.Category),
+		sql.Named("Description", astro.Description)).Scan(&lastInsertId); err != nil {
 		panic(err)
 	}
 
@@ -39,8 +38,8 @@ func Create(astro models.Astro) {
 }
 
 func GetAll() []models.Astro {
-	var id, moons int
-	var imagePath, name, description, category, mass string
+	var id int
+	var image, name, category, description, mass string
 	var diameter, temperature, sunDistance float64
 
 	db := providers.SqlConnection()
@@ -53,7 +52,7 @@ func GetAll() []models.Astro {
 	}
 
 	for rows.Next() {
-		err = rows.Scan(&id, &imagePath, &name, &moons, &description, &category)
+		err = rows.Scan(&id, &image, &name, &category, &description)
 		if err != nil && err == sql.ErrNoRows {
 			return nil
 		}
@@ -63,9 +62,9 @@ func GetAll() []models.Astro {
 			sql.Named("AstroId", id)).Scan(&mass, &diameter, &temperature, &sunDistance)
 
 		if err2 == sql.ErrNoRows {
-			astros = append(astros, models.Astro{id, imagePath, name, moons, description, category, models.FisicalInformation{}})
+			astros = append(astros, models.Astro{id, image, name, category, description, models.FisicalInformation{}})
 		} else {
-			astros = append(astros, models.Astro{id, imagePath, name, moons, description, category,
+			astros = append(astros, models.Astro{id, image, name, category, description,
 				models.FisicalInformation{mass, diameter, temperature, sunDistance}})
 		}
 	}
@@ -75,22 +74,21 @@ func GetAll() []models.Astro {
 
 func Get(id int) models.Astro {
 	var astro models.Astro
-	var moons int
-	var imagePath, name, description, category, mass string
+	var image, name, category, description, mass string
 	var diameter, temperature, sunDistance float64
 
 	db := providers.SqlConnection()
 	defer db.Close()
 
 	err := db.QueryRow(
-		"SELECT a.ImagePath, a.Name, a.Moons, a.Description, a.Category, f.Mass, f.Diameter, F.Temperature, F.SunDistance FROM [dbo].[Astro] a LEFT JOIN [dbo].[FisicalInformation] f ON a.Id = f.AstroId WHERE a.Id = @id",
-		sql.Named("id", id)).Scan(&imagePath, &name, &moons, &description, &category, &mass, &diameter, &temperature, &sunDistance)
+		"SELECT a.Image, a.Name, a.Category, a.Description, f.Mass, f.Diameter, F.Temperature, F.SunDistance FROM [dbo].[Astro] a LEFT JOIN [dbo].[FisicalInformation] f ON a.Id = f.AstroId WHERE a.Id = @id",
+		sql.Named("id", id)).Scan(&image, &name, &category, &description, &mass, &diameter, &temperature, &sunDistance)
 
 	if err != nil && err == sql.ErrNoRows {
 		return astro
 	}
 
-	astro = models.Astro{id, imagePath, name, moons, description, category,
+	astro = models.Astro{id, image, name, category, description,
 		models.FisicalInformation{mass, diameter, temperature, sunDistance}}
 
 	return astro
@@ -100,8 +98,8 @@ func Update(id int, astro models.Astro) {
 	db := providers.SqlConnection()
 	defer db.Close()
 
-	update1 := fmt.Sprintf("UPDATE [dbo].[Astro] SET ImagePath = '%s', Name = '%s', Moons = %d, Description = '%s', Category = '%s' WHERE Id = %d",
-		astro.ImagePath, astro.Name, astro.Moons, astro.Description, astro.Category, id)
+	update1 := fmt.Sprintf("UPDATE [dbo].[Astro] SET Image = '%s', Name = '%s', Category = '%s', Description = '%s' WHERE Id = %d",
+		astro.Image, astro.Name, astro.Category, astro.Description, id)
 
 	_, err := db.Exec(update1)
 	if err != nil {
