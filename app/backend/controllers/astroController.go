@@ -46,19 +46,48 @@ func GetAstro(w http.ResponseWriter, r *http.Request) {
 func CreateAstro(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var astro models.Astro
-	_ = json.NewDecoder(r.Body).Decode(&astro)
-	result := repositories.Create(astro)
 
-	w.WriteHeader(204)
-	json.NewEncoder(w).Encode(result)
+	err := json.NewDecoder(r.Body).Decode(&astro)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	repositories.Create(astro)
+	w.WriteHeader(201)
 }
 
 func UpdateAstro(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
 
+	id, err := strconv.Atoi(params["id"])
+	if err != nil || id < 1 {
+		w.WriteHeader(400)
+		return
+	}
+
+	var astro models.Astro
+	err2 := json.NewDecoder(r.Body).Decode(&astro)
+	if err2 != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	repositories.Update(id, astro)
+	w.WriteHeader(200)
 }
 
 func DeleteAstro(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
 
+	id, err := strconv.Atoi(params["id"])
+	if err != nil || id < 1 {
+		w.WriteHeader(400)
+		return
+	}
+
+	repositories.Delete(id)
+	w.WriteHeader(204)
 }
