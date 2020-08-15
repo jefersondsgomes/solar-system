@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -12,30 +13,32 @@ func Create(astro models.Astro) error {
 	db := providers.SqlConnection()
 	defer db.Close()
 
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	var lastInsertId int
-	if err := db.QueryRow("INSERT INTO [dbo].[Astro] (Image, Name, Category, Description) OUTPUT Inserted.ID VALUES (@Image, @Name, @Category, @Description)",
-		sql.Named("Image", astro.Image),
-		sql.Named("Name", astro.Name),
-		sql.Named("Category", astro.Category),
-		sql.Named("Description", astro.Description)).Scan(&lastInsertId); err != nil {
+	insert := fmt.Sprintf("INSERT INTO [dbo].[Astro] (Image, Name, Category, Description) OUTPUT Inserted.ID VALUES ('%s', '%s', '%s', '%s')",
+		astro.Image, astro.Name, astro.Category, astro.Description)
+	if err = tx.QueryRowContext(ctx, insert).Scan(&lastInsertId); err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	if len(astro.Information.Mass) > 0 &&
 		astro.Information.Diameter > 0 {
-		insert, err2 := db.Prepare("INSERT INTO [dbo].[FisicalInformation] (AstroId, Mass, Diameter, Temperature, SunDistance) VALUES (@AstroId, @Mass, @Diameter, @Temperature, @SunDistance)")
-		if err2 != nil {
-			return err2
-		}
+		insert2 := fmt.Sprintf("INSERT INTO [dbo].[FisicalInformation] (AstroId, Mass, Diameter, Temperature, SunDistance) VALUES (%d, '%s', %f, %f, %f)",
+			lastInsertId, astro.Information.Mass, astro.Information.Diameter, astro.Information.Temperature, astro.Information.SunDistance)
 
-		_, err3 := insert.Exec(sql.Named("AstroId", lastInsertId), sql.Named("Mass", astro.Information.Mass),
-			sql.Named("Diameter", astro.Information.Diameter), sql.Named("Temperature", astro.Information.Temperature),
-			sql.Named("SunDistance", astro.Information.SunDistance))
-		if err3 != nil {
-			return err3
+		if _, err = tx.ExecContext(ctx, insert2); err != nil {
+			tx.Rollback()
+			return err
 		}
 	}
 
+	tx.Commit()
 	return nil
 }
 
