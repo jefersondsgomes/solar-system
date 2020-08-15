@@ -8,7 +8,7 @@ import (
 	"../providers"
 )
 
-func Create(astro models.Astro) {
+func Create(astro models.Astro) error {
 	db := providers.SqlConnection()
 	defer db.Close()
 
@@ -18,26 +18,28 @@ func Create(astro models.Astro) {
 		sql.Named("Name", astro.Name),
 		sql.Named("Category", astro.Category),
 		sql.Named("Description", astro.Description)).Scan(&lastInsertId); err != nil {
-		panic(err)
+		return err
 	}
 
 	if len(astro.Information.Mass) > 0 &&
 		astro.Information.Diameter > 0 {
 		insert, err2 := db.Prepare("INSERT INTO [dbo].[FisicalInformation] (AstroId, Mass, Diameter, Temperature, SunDistance) VALUES (@AstroId, @Mass, @Diameter, @Temperature, @SunDistance)")
 		if err2 != nil {
-			panic(err2)
+			return err2
 		}
 
 		_, err3 := insert.Exec(sql.Named("AstroId", lastInsertId), sql.Named("Mass", astro.Information.Mass),
 			sql.Named("Diameter", astro.Information.Diameter), sql.Named("Temperature", astro.Information.Temperature),
 			sql.Named("SunDistance", astro.Information.SunDistance))
 		if err3 != nil {
-			panic(err3)
+			return err3
 		}
 	}
+
+	return nil
 }
 
-func GetAll() []models.Astro {
+func GetAll() ([]models.Astro, error) {
 	var id int
 	var image, name, category, description, mass string
 	var diameter, temperature, sunDistance float64
@@ -48,13 +50,13 @@ func GetAll() []models.Astro {
 
 	rows, err := db.Query("SELECT * FROM [dbo].[Astro] ORDER BY Id")
 	if err != nil && err == sql.ErrNoRows {
-		panic(err)
+		return nil, err
 	}
 
 	for rows.Next() {
 		err = rows.Scan(&id, &image, &name, &category, &description)
 		if err != nil && err == sql.ErrNoRows {
-			return nil
+			return nil, err
 		}
 
 		err2 := db.QueryRow(
@@ -69,10 +71,10 @@ func GetAll() []models.Astro {
 		}
 	}
 
-	return astros
+	return astros, nil
 }
 
-func Get(id int) models.Astro {
+func Get(id int) (models.Astro, error) {
 	var astro models.Astro
 	var image, name, category, description, mass string
 	var diameter, temperature, sunDistance float64
@@ -85,16 +87,16 @@ func Get(id int) models.Astro {
 		sql.Named("id", id)).Scan(&image, &name, &category, &description, &mass, &diameter, &temperature, &sunDistance)
 
 	if err != nil && err == sql.ErrNoRows {
-		return astro
+		return astro, err
 	}
 
 	astro = models.Astro{id, image, name, category, description,
 		models.FisicalInformation{mass, diameter, temperature, sunDistance}}
 
-	return astro
+	return astro, nil
 }
 
-func Update(id int, astro models.Astro) {
+func Update(id int, astro models.Astro) error {
 	db := providers.SqlConnection()
 	defer db.Close()
 
@@ -103,11 +105,11 @@ func Update(id int, astro models.Astro) {
 
 	_, err := db.Exec(update1)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if (models.FisicalInformation{}) != astro.Information {
-		dbAstro := Get(id)
+		dbAstro, _ := Get(id)
 
 		if (models.FisicalInformation{}) != dbAstro.Information {
 			update2 := fmt.Sprintf("UPDATE [dbo].[FisicalInformation] SET Mass = '%s', Diameter = %f, Temperature = %f, SunDistance = %f WHERE AstroId = %d",
@@ -115,7 +117,7 @@ func Update(id int, astro models.Astro) {
 
 			_, err2 := db.Exec(update2)
 			if err2 != nil {
-				panic(err2)
+				return err2
 			}
 		} else {
 			insert := fmt.Sprintf("INSERT INTO [dbo].[FisicalInformation] (AstroId, Mass, Diameter, Temperature, SunDistance) VALUES (%d, '%s', %f, %f, %f)",
@@ -123,20 +125,27 @@ func Update(id int, astro models.Astro) {
 
 			_, err3 := db.Exec(insert)
 			if err3 != nil {
-				panic(err3)
+				return err3
 			}
 		}
 	}
+
+	return nil
 }
 
-func Delete(id int) {
+func Delete(id int) error {
 	db := providers.SqlConnection()
 	defer db.Close()
 
 	delete, err := db.Prepare("DELETE FROM [dbo].[Astro] WHERE Id = @id")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	delete.Exec(sql.Named("id", id))
+	_, err2 := delete.Exec(sql.Named("id", id))
+	if err2 != nil {
+		return err2
+	}
+
+	return nil
 }

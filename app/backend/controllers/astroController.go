@@ -11,12 +11,37 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func CreateAstro(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var astro models.Astro
+
+	err := json.NewDecoder(r.Body).Decode(&astro)
+	if err != nil {
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
+	err = repositories.Create(astro)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
+	w.WriteHeader(201)
+}
+
 func GetAstros(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	astros := repositories.GetAll()
+	astros, err := repositories.GetAll()
 
 	if len(astros) == 0 {
 		w.WriteHeader(204)
+		return
+	} else if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err)
 		return
 	}
 
@@ -30,31 +55,22 @@ func GetAstro(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	astro := repositories.Get(id)
+	astro, err := repositories.Get(id)
 
 	if astro.Id < 1 {
 		w.WriteHeader(204)
 		return
-	}
-
-	json.NewEncoder(w).Encode(astro)
-}
-
-func CreateAstro(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var astro models.Astro
-
-	err := json.NewDecoder(r.Body).Decode(&astro)
-	if err != nil {
-		w.WriteHeader(400)
+	} else if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	repositories.Create(astro)
-	w.WriteHeader(201)
+	json.NewEncoder(w).Encode(astro)
 }
 
 func UpdateAstro(w http.ResponseWriter, r *http.Request) {
@@ -64,17 +80,25 @@ func UpdateAstro(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(params["id"])
 	if err != nil || id < 1 {
 		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
 	var astro models.Astro
-	err2 := json.NewDecoder(r.Body).Decode(&astro)
-	if err2 != nil {
+	err = json.NewDecoder(r.Body).Decode(&astro)
+	if err != nil {
 		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	repositories.Update(id, astro)
+	err = repositories.Update(id, astro)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
 	w.WriteHeader(200)
 }
 
@@ -85,9 +109,16 @@ func DeleteAstro(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(params["id"])
 	if err != nil || id < 1 {
 		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	repositories.Delete(id)
+	err = repositories.Delete(id)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
 	w.WriteHeader(204)
 }
