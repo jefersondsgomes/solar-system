@@ -3,15 +3,13 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-
-	"../models"
-	"../repositories"
+	"solar-system/models"
+	"solar-system/repositories"
 
 	"github.com/gorilla/mux"
 )
 
-func CreateAstro(w http.ResponseWriter, r *http.Request) {
+func Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var astro models.Astro
 
@@ -22,103 +20,62 @@ func CreateAstro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.Create(astro)
-	if err != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(err.Error())
+	if (models.Astro{}) == astro {
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode("Invalid JSON!")
 		return
 	}
 
+	newAstro := repositories.Create(astro)
 	w.WriteHeader(201)
+	json.NewEncoder(w).Encode(newAstro)
 }
 
-func GetAstros(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	astros, err := repositories.GetAll()
-
-	if len(astros) == 0 {
-		w.WriteHeader(204)
-		return
-	} else if err != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-
-	json.NewEncoder(w).Encode(astros)
-}
-
-func GetAstro(w http.ResponseWriter, r *http.Request) {
+func Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
 
-	if err != nil {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(err.Error())
-		return
-	}
+	astro := repositories.Get(params["id"])
 
-	astro, err := repositories.Get(id)
-
-	if astro.Id < 1 {
-		w.WriteHeader(204)
-		return
-	} else if err != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(err.Error())
+	if astro.ID == 0 {
+		w.WriteHeader(404)
 		return
 	}
 
 	json.NewEncoder(w).Encode(astro)
 }
 
-func UpdateAstro(w http.ResponseWriter, r *http.Request) {
+func GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-
-	id, err := strconv.Atoi(params["id"])
-	if err != nil || id < 1 {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(err.Error())
-		return
-	}
-
-	var astro models.Astro
-	err = json.NewDecoder(r.Body).Decode(&astro)
-	if err != nil {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(err.Error())
-		return
-	}
-
-	err = repositories.Update(id, astro)
-	if err != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(err.Error())
-		return
-	}
-
-	w.WriteHeader(200)
+	astros := repositories.GetAll()
+	json.NewEncoder(w).Encode(astros)
 }
 
-func DeleteAstro(w http.ResponseWriter, r *http.Request) {
+func Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
+	var astro models.Astro
 
-	id, err := strconv.Atoi(params["id"])
-	if err != nil || id < 1 {
+	err := json.NewDecoder(r.Body).Decode(&astro)
+	if err != nil {
 		w.WriteHeader(400)
 		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	err = repositories.Delete(id)
-	if err != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(err.Error())
+	params := mux.Vars(r)
+	newAstro := repositories.Update(params["id"], astro)
+
+	if newAstro.ID == 0 {
+		w.WriteHeader(404)
 		return
 	}
 
+	json.NewEncoder(w).Encode(newAstro)
+}
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	repositories.Delete(params["id"])
 	w.WriteHeader(204)
 }
