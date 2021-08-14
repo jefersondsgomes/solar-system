@@ -26,7 +26,13 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newAstro := repositories.Create(astro)
+	newAstro, err := repositories.Create(astro)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(newAstro)
 }
@@ -35,7 +41,12 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 
-	astro := repositories.Get(params["id"])
+	astro, err := repositories.Get(params["id"])
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
 
 	if astro.ID == 0 {
 		w.WriteHeader(404)
@@ -47,14 +58,21 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	astros := repositories.GetAll()
+
+	astros, err := repositories.GetAll()
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
 	json.NewEncoder(w).Encode(astros)
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var astro models.Astro
 
+	var astro models.Astro
 	err := json.NewDecoder(r.Body).Decode(&astro)
 	if err != nil {
 		w.WriteHeader(400)
@@ -63,7 +81,12 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-	newAstro := repositories.Update(params["id"], astro)
+	newAstro, err := repositories.Update(params["id"], astro)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
 
 	if newAstro.ID == 0 {
 		w.WriteHeader(404)
@@ -76,6 +99,13 @@ func Update(w http.ResponseWriter, r *http.Request) {
 func Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	repositories.Delete(params["id"])
+
+	err := repositories.Delete(params["id"])
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
 	w.WriteHeader(204)
 }
