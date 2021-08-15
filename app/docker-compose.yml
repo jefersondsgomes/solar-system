@@ -1,6 +1,6 @@
 version: '3.8'
 
-services:
+services:  
   solar-system-api:
     image: solar-system-api
     container_name: solar-system-api
@@ -9,14 +9,15 @@ services:
     build: 
       context: .
       dockerfile: backend/Dockerfile
+    restart: on-failure:10  
     depends_on: 
       - sql
   sql:
     image: mcr.microsoft.com/mssql/server
     user: root
-    container_name: solar-system-sql    
+    container_name: solar-system-sql
     ports: 
-      - 1433:1433
+      - 1401:1433
     environment: 
       SA_PASSWORD: "@S0larSyst3m"
       ACCEPT_EULA: "Y"

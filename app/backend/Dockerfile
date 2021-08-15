@@ -6,8 +6,7 @@ COPY backend/go.mod .
 COPY backend/go.sum .
 RUN go mod download
 
-COPY . .
+COPY ./backend .
+RUN go build -o /app/main .
 
-RUN go build -o /solar-system-api
-
-CMD [ "/solar-system-api" ]
+CMD ["/app/main"]
