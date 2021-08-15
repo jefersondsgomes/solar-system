@@ -1,10 +1,13 @@
 package models
 
+import "time"
+
 type Astro struct {
-	Id          int                `json:"id"`
-	Image       string             `json:"image"`
-	Name        string             `json:"name"`
-	Category    string             `json:"category"`
-	Description string             `json:"description"`
-	Information FisicalInformation `json:"information"`
+	ID          uint64    `json:"id" gorm:"primaryKey;auto_increment"`
+	Name        string    `json:"name" binding:"required" gorm:"type:varchar(50);not null;unique"`
+	Category    string    `json:"category" binding:"required" gorm:"type:varchar(50)"`
+	Description string    `json:"description" gorm:"type:varchar(255)"`
+	Image       string    `json:"image" gorm:"type:varchar(255)"`
+	Data        AstroData `json:"data" gorm:"embedded"`
+	Inserted    time.Time `json:"-" gorm:"default:CURRENT_TIMESTAMP"`
 }

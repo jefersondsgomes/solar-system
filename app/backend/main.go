@@ -3,19 +3,14 @@ package main
 import (
 	"log"
 	"net/http"
+	"solar-system/routes"
 
-	"./controllers"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	r := mux.NewRouter()
-
-	r.HandleFunc("/api/v1/astros", controllers.GetAstros).Methods("GET")
-	r.HandleFunc("/api/v1/astros/{id}", controllers.GetAstro).Methods("GET")
-	r.HandleFunc("/api/v1/astros", controllers.CreateAstro).Methods("POST")
-	r.HandleFunc("/api/v1/astros/{id}", controllers.UpdateAstro).Methods("PUT")
-	r.HandleFunc("/api/v1/astros/{id}", controllers.DeleteAstro).Methods("DELETE")
-
-	log.Fatal(http.ListenAndServe(":8000", r))
+	router := mux.NewRouter()
+	routes.RegisterRoutes(router)
+	http.Handle("/", router)
+	log.Fatal(http.ListenAndServe(":8000", router))
 }
