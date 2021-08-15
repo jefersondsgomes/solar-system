@@ -1,28 +1,24 @@
 package providers
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 
-	_ "github.com/denisenkom/go-mssqldb"
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
 )
 
-var server = "localhost"
-var port = 1433
-var user = "sa"
-var password = "1SSCataloger@"
-var database = "SOLAR.SYSTEM.CATALOG"
+var db *gorm.DB
 
-func SqlConnection() *sql.DB {
-	connectionString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;",
-		server, user, password, port, database)
-
-	db, err := sql.Open("sqlserver", connectionString)
+func Connect() {
+	conn, err := gorm.Open(sqlserver.Open("server=host.docker.internal;user id=sa;password=@S0larSyst3m;port=1401"), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal("Error creating connection pool: ", err.Error())
+		panic(fmt.Sprintf("An error occurred while trying to create database connection: %s", err.Error()))
 	}
 
+	db = conn
+}
+
+func GetDB() *gorm.DB {
 	return db
 }
