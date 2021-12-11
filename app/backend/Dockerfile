@@ -2,11 +2,11 @@ FROM golang
 
 WORKDIR /app
 
-COPY backend/go.mod .
-COPY backend/go.sum .
+COPY go.mod .
+COPY go.sum .
 RUN go mod download
 
-COPY ./backend .
-RUN go build -o /app/main .
+COPY . .
+RUN go build -o /solar-system
 
-CMD ["/app/main"]
+CMD ["/solar-system"]

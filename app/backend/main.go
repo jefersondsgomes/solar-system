@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
-	"solar-system/routes"
 
 	"github.com/gorilla/mux"
+	"github.com/jefersondsgomes/solar-system-catalog/routes"
 )
 
 func main() {

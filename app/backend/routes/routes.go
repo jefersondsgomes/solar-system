@@ -1,9 +1,8 @@
 package routes
 
 import (
-	"solar-system/controllers"
-
 	"github.com/gorilla/mux"
+	"github.com/jefersondsgomes/solar-system-catalog/controllers"
 )
 
 var RegisterRoutes = func(router *mux.Router) {
