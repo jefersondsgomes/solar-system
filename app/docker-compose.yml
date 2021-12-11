@@ -7,7 +7,7 @@ services:
     ports: 
       - 8000:8000
     build: 
-      context: .
+      context: ./backend
       dockerfile: backend/Dockerfile
     restart: on-failure:10  
     depends_on: 
