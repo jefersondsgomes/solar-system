@@ -11,3 +11,7 @@ type Astro struct {
 	PhysicalData *PhysicalData `json:"physicalData,omitempty" gorm:"foreignKey:AstroID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Inserted     time.Time     `json:"-" gorm:"default:CURRENT_TIMESTAMP"`
 }
+
+func (Astro) TableName() string {
+	return "astro"
+}
