@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jefersondsgomes/solar-system-catalog/routes"
+	"github.com/jefersondsgomes/universe-catalog/routes"
 )
 
 func main() {

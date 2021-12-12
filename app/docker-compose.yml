@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:  
-  solar-system-catalog-api:
-    image: ssolar-system-catalog-api
-    container_name: solar-system-catalog-api
+  universe-catalog-api:
+    image: universe-catalog-api
+    container_name: universe-catalog-api
     ports: 
       - 8000:8000
     build: 
@@ -11,17 +11,17 @@ services:
       dockerfile: Dockerfile
     restart: on-failure:10  
     depends_on: 
-      - solar-system-catalog-db
-  solar-system-catalog-db:
+      - universe-catalog-db
+  universe-catalog-db:
     image: mcr.microsoft.com/mssql/server
     user: root
-    container_name: solar-system-catalog-db
+    container_name: universe-catalog-db
     ports: 
       - 1401:1433
     environment: 
-      SA_PASSWORD: "@S0larSyst3m"
+      SA_PASSWORD: "@Un1v3r53C4t4l0g"
       ACCEPT_EULA: "Y"
     volumes: 
-      - solar-system-catalog-db-vol:/var/opt/mssql/data
+      - universe-catalog-db-vol:/var/opt/mssql/data
 volumes: 
-  solar-system-catalog-db-vol:
+  universe-catalog-db-vol:

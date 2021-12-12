@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/jefersondsgomes/solar-system-catalog/models"
-	"github.com/jefersondsgomes/solar-system-catalog/providers"
+	"github.com/jefersondsgomes/universe-catalog/models"
+	"github.com/jefersondsgomes/universe-catalog/providers"
 	"gorm.io/gorm"
 )
 

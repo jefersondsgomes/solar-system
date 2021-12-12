@@ -1,4 +1,4 @@
-module github.com/jefersondsgomes/solar-system-catalog
+module github.com/jefersondsgomes/universe-catalog
 
 go 1.17
 
