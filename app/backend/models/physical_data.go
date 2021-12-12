@@ -12,3 +12,7 @@ type PhysicalData struct {
 	OrbitalPeriod int       `json:"orbitalPeriod" gorm:"default:0;not null"`
 	Inserted      time.Time `json:"-" gorm:"default:CURRENT_TIMESTAMP"`
 }
+
+func (PhysicalData) TableName() string {
+	return "data"
+}
