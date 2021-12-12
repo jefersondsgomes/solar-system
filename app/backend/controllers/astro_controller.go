@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/jefersondsgomes/solar-system-catalog/helpers"
-	"github.com/jefersondsgomes/solar-system-catalog/models"
-	"github.com/jefersondsgomes/solar-system-catalog/repositories"
+	"github.com/jefersondsgomes/universe-catalog/helpers"
+	"github.com/jefersondsgomes/universe-catalog/models"
+	"github.com/jefersondsgomes/universe-catalog/repositories"
 )
 
 func Create(w http.ResponseWriter, r *http.Request) {
@@ -94,16 +94,10 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	astro.ID = id
 	astro.PhysicalData.ID = id
 	astro.PhysicalData.AstroID = id
-	var defaultAstro = astro
 	astro, err = repositories.Update(astro)
 	if err != nil {
 		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(helpers.GenerateErrorResponse(500, err.Error()))
-		return
-	}
-
-	if astro == defaultAstro {
-		w.WriteHeader(201)
 		return
 	}
 

@@ -7,6 +7,6 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN go build -o /solar-system
+RUN go build -o /universe-catalog
 
-CMD ["/solar-system"]
+CMD ["/universe-catalog"]
