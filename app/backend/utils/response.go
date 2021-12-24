@@ -1,6 +1,4 @@
-package helpers
-
-type Empty struct{}
+package utils
 
 type ErrorResponse struct {
 	StatusCode int    `json:"statusCode"`
@@ -8,10 +6,8 @@ type ErrorResponse struct {
 }
 
 func GenerateErrorResponse(statusCode int, message string) ErrorResponse {
-	response := ErrorResponse{
+	return ErrorResponse{
 		StatusCode: statusCode,
 		Error:      message,
 	}
-
-	return response
 }
