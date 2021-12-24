@@ -1,8 +1,9 @@
 package repositories
 
 import (
-	"github.com/jefersondsgomes/universe-catalog/models"
+	"github.com/jefersondsgomes/universe-catalog/entities"
 	"github.com/jefersondsgomes/universe-catalog/providers"
+	"github.com/jefersondsgomes/universe-catalog/utils"
 	"gorm.io/gorm"
 )
 
@@ -13,35 +14,33 @@ var db *gorm.DB
 func init() {
 	providers.Connect()
 	db = providers.GetDB()
-	db.AutoMigrate(&models.Astro{}, &models.PhysicalData{})
+	db.AutoMigrate(&entities.Astro{}, &entities.PhysicalData{})
 }
 
-func Create(astro models.Astro) (models.Astro, error) {
-	var result = db.Create(&astro)
-	return astro, result.Error
-}
-
-func Get(astro models.Astro) (models.Astro, error) {
-	var result = db.Preload(PhysicalData).Find(&astro)
-	return astro, result.Error
-}
-
-func GetAll() ([]models.Astro, error) {
-	var astros []models.Astro
-	var result = db.Preload(PhysicalData).Find(&astros)
-	return astros, result.Error
-}
-
-func Update(astro models.Astro) (models.Astro, error) {
-	if err := db.Model(&astro).Updates(&astro).Error; err != nil {
-		return astro, err
-	}
-
-	err := db.Model(&astro.PhysicalData).Updates(&astro.PhysicalData).Error
+func Create(astro entities.Astro) (entities.Astro, error) {
+	err := db.Create(&astro).Error
 	return astro, err
 }
 
-func Delete(astro models.Astro) error {
-	var result = db.Delete(&astro)
-	return result.Error
+func Get(astro entities.Astro) (entities.Astro, error) {
+	err := db.Preload(PhysicalData).Find(&astro).Error
+	return astro, err
+}
+
+func GetAll(pagination utils.Pagination) ([]entities.Astro, error) {
+	var astros []entities.Astro
+	offset := (pagination.Page - 1) * pagination.Limit
+	queryBuider := db.Limit(pagination.Limit).Offset(offset)
+	err := queryBuider.Preload(PhysicalData).Find(&astros).Error
+	return astros, err
+}
+
+func Update(astro entities.Astro) (entities.Astro, error) {
+	err := db.Save(&astro).Error
+	return astro, err
+}
+
+func Delete(astro entities.Astro) error {
+	err := db.Delete(&astro).Error
+	return err
 }
